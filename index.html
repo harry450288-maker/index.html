@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>當兵兵役抽籤器</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;color:#eaf2ef;background:#101d1b}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#25463d,#101d1b 70%)}main{width:min(100%,620px);background:#192c28;border:1px solid #45685c;border-radius:22px;padding:32px;box-shadow:0 18px 60px #0006}h1{margin:0 0 8px;font-size:2rem}p{color:#bdd0c7;line-height:1.7}.tag{display:inline-block;color:#b5e3b8;border:1px solid #507b59;padding:4px 10px;border-radius:20px;font-size:.85rem;margin-bottom:16px}label{display:block;font-weight:700;margin:24px 0 10px}textarea{width:100%;height:170px;resize:vertical;padding:16px;border:1px solid #5a786c;border-radius:12px;background:#101e1a;color:white;font:1.05rem/1.7 inherit;outline-offset:3px}button{width:100%;margin-top:16px;padding:16px;border:0;border-radius:12px;background:#bce7a3;color:#14241c;font-size:1.15rem;font-weight:800;cursor:pointer}button:hover{background:#d0f3bd}button:focus-visible,textarea:focus-visible{outline:3px solid #e2f6b0}#result{margin-top:24px;padding:25px 18px;border:1px solid #577c6e;background:#12221e;border-radius:15px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:center;gap:9px}#result .caption{color:#afc9bc;font-size:.9rem}#winner{font-size:2rem;font-weight:900;color:#d4f7ba;overflow-wrap:anywhere}#message{color:#c4d5cc;font-size:.9rem}small{display:block;margin-top:16px;color:#b1c4b8;line-height:1.7}@media(max-width:480px){main{padding:22px}h1{font-size:1.6rem}}
+</style>
+</head>
+<body>
+<main>
+<span class="tag">🎖️ 兵役趣味抽籤</span>
+<h1>當兵兵役抽籤器</h1>
+<p>一行輸入一個兵種，按下按鈕，看看今天的手氣！</p>
+<label for="options">抽籤選項（每行一個）</label>
+<textarea id="options" spellcheck="false">陸軍
+空軍
+海軍
+海軍陸戰隊</textarea>
+<button id="draw" type="button">幫我選</button>
+<section id="result" role="status" aria-live="polite" aria-atomic="true">
+<span class="caption">抽籤結果</span>
+<div id="winner">準備好了嗎？</div>
+<div id="message">按下「幫我選」開始抽籤</div>
+</section>
+<small>預設權重：陸軍 85%、空軍 5%、海軍 5%、海軍陸戰隊 5%。若刪除兵種或加入其他選項，系統會依剩餘選項權重重新分配機率；新增選項預設權重為 1。</small>
+</main>
+<script>
+'use strict';
+const weights = { '陸軍': 85, '空軍': 5, '海軍': 5, '海軍陸戰隊': 5 };
+const textarea = document.getElementById('options');
+const winner = document.getElementById('winner');
+const message = document.getElementById('message');
+
+document.getElementById('draw').addEventListener('click', () => {
+  const options = [...new Set(textarea.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean))];
+  if (options.length === 0) {
+    winner.textContent = '請先輸入至少一個選項';
+    message.textContent = '';
+    return;
+  }
+  const weighted = options.map(name => ({ name, weight: weights[name] ?? 1 }));
+  const total = weighted.reduce((sum, item) => sum + item.weight, 0);
+  const random = Math.random() * total;
+  let cumulative = 0;
+  let selected = weighted[weighted.length - 1].name;
+  for (const item of weighted) {
+    cumulative += item.weight;
+    if (random < cumulative) {
+      selected = item.name;
+      break;
+    }
+  }
+  winner.textContent = selected;
+  message.textContent = `已從 ${options.length} 個有效選項中抽出結果！`;
+});
+</script>
+</body>
+</html>
